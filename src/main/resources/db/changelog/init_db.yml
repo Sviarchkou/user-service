@@ -1,0 +1,112 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-user-payment-card-tables
+      author: sviarchkou
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "gen_random_uuid()"
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: surname
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: birth_day
+                  type: date
+                  constraints:
+                    checkConstraint: "birth_day < CURRENT_DATE"
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    checkConstraint: "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'"
+              - column:
+                  name: active
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+
+        - createTable:
+            tableName: payment_cards
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "gen_random_uuid()"
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_payment_cards_users
+                    references: users(id)
+              - column:
+                  name: number
+                  type: char(16)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: holder
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiration_date
+                  type: char(5)
+                  constraints:
+                    nullable: false
+                    checkConstraint: "expiration_date ~ '^(0[1-9]|1[0-2])/[0-9]{2}$'"
+              - column:
+                  name: active
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+
+        - createIndex:
+            indexName: idx_users_email
+            tableName: users
+            columns:
+              - column:
+                  name: email
+
+        - createIndex:
+            indexName: idx_payment_cards_number
+            tableName: payment_cards
+            columns:
+              - column:
+                  name: number
