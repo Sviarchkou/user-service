@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,8 +15,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentCardDto {
-    @NotNull
+public class PaymentCardDto implements Serializable {
+
+    @NotNull(message = "ID is required", groups = UpdateGroup.class)
     UUID id;
 
     @NotNull
@@ -37,8 +39,9 @@ public class PaymentCardDto {
 
     boolean active = false;
 
-    @NotNull
     LocalDateTime createdAt;
 
     LocalDateTime updatedAt;
+
+    public interface UpdateGroup {}
 }

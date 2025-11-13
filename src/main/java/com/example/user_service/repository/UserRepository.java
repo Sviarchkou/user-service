@@ -1,8 +1,6 @@
 package com.example.user_service.repository;
 
 import com.example.user_service.entity.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,9 +23,9 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
     @Modifying
     @Query(value = """
-        UPDATE users u
-        SET u.active = true, u.updatedAt = now()
-        WHERE u.id = :id
+        UPDATE users
+        SET active = true, updated_at = now()
+        WHERE id = :id
     """, nativeQuery = true)
     void activateUserById(UUID id);
 

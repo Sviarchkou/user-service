@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.time.LocalDateTime;
@@ -17,8 +18,11 @@ import java.util.UUID;
 @Table(name = "payment_cards")
 @EnableJpaAuditing
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@EntityListeners(AuditingEntityListener.class)
 public class PaymentCard {
+
     @Id
+    @GeneratedValue
     UUID id;
 
     @EqualsAndHashCode.Exclude

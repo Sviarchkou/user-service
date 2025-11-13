@@ -8,7 +8,7 @@ import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,10 +18,14 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "users")
-@EnableJpaAuditing
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString(exclude = "paymentCards")
+@EqualsAndHashCode(exclude = "paymentCards")
+@EntityListeners(AuditingEntityListener.class)
 public class User {
+
     @Id
+    @GeneratedValue
     UUID id;
     String name;
     String surname;
@@ -40,8 +44,6 @@ public class User {
     @Column(name = "updated_at", insertable = false)
     LocalDateTime updatedAt;
 
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     List<PaymentCard> paymentCards;
 }

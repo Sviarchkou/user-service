@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,7 +24,7 @@ public interface PaymentCardRepository extends JpaRepository<PaymentCard, UUID>,
 
     //  Logic of maximum count of user's payment cards (max 5 card) will be brought to the service layer
 
-    PaymentCard findPaymentCardById(UUID id);
+    Optional<PaymentCard> findPaymentCardById(UUID id);
 
     @Query(value = """
         SELECT * FROM payment_cards p
