@@ -98,15 +98,17 @@ databaseChangeLog:
                   type: timestamp
 
         - createIndex:
-            indexName: idx_users_email
+            indexName: idx_users_name_surname
             tableName: users
             columns:
               - column:
-                  name: email
+                  name: name
+              - column:
+                  name: surname
 
         - createIndex:
-            indexName: idx_payment_cards_number
+            indexName: idx_payment_cards_user_id
             tableName: payment_cards
             columns:
               - column:
-                  name: number
+                  name: user_id
