@@ -44,7 +44,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=Sviarchkou_user-service
+            -Dsonar.projectKey=sviarchkou_user-service
             -Dsonar.organization=sviarchkou
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.java.binaries=build/classes
