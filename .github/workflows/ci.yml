@@ -8,7 +8,6 @@ on:
     branches:
       - main
 
-
 jobs:
   build-test-analyze:
     runs-on: ubuntu-latest
@@ -37,17 +36,18 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build and Run tests
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build --no-daemon --stacktrace
 
-      - name: SonarQube Scan
+      - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=user-service
+            -Dsonar.projectKey=innowise_user-service
             -Dsonar.organization=innowise
             -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.java.binaries=build/classes
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
@@ -62,4 +62,4 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push Docker image
-        run: docker push your-dockerhub-username/user-service:${{ github.sha }}
+        run: docker push dockerevgen1209/user-service:${{ github.sha }}
