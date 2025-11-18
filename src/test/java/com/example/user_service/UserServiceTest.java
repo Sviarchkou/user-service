@@ -2,7 +2,7 @@ package com.example.user_service;
 
 import com.example.user_service.dto.UserDto;
 import com.example.user_service.entity.User;
-import com.example.user_service.filter.UserFilter;
+import com.example.user_service.filter.SpecializationFilter;
 import com.example.user_service.mapper.UserMapper;
 import com.example.user_service.repository.UserRepository;
 import com.example.user_service.service.UserService;
@@ -76,7 +76,6 @@ public class UserServiceTest {
         UserDto result = userService.create(mockUserDto);
 
         // Assert
-        verify(validator).validate(mockUserDto);
         verify(userMapper).toEntity(mockUserDto);
         verify(userRepository).save(user);
         verify(userMapper).toDto(dbUser);
@@ -134,7 +133,7 @@ public class UserServiceTest {
     void shouldReturnPageOfUserDto() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 5, Sort.by("name"));
-        UserFilter filter = new UserFilter("ja", "s");
+        SpecializationFilter filter = new SpecializationFilter("ja", "s");
 
         User dbUser1 = new User();
         var user1Id = UUID.randomUUID();
@@ -256,7 +255,6 @@ public class UserServiceTest {
         var result = userService.update(userDto);
 
         // Assert
-        verify(validator).validate(userDto, UserDto.UpdateGroup.class);
         verify(userRepository).findUserById(id);
         verify(userRepository).saveAndFlush(userDb);
         verify(userMapper).toDto(updatedUserDb);
@@ -284,14 +282,16 @@ public class UserServiceTest {
         expectedUserDto.setActive(true);
         expectedUserDto.setCreatedAt(LocalDateTime.now());
 
-        when(userRepository.findUserById(id)).thenReturn(Optional.of(dbUser));
+        when(userRepository.findById(id)).thenReturn(Optional.of(dbUser));
+        when(userRepository.save(dbUser)).thenReturn(dbUser);
         when(userMapper.toDto(dbUser)).thenReturn(expectedUserDto);
 
         // Act
         var result = userService.activateById(id);
 
         // Assert
-        verify(userRepository).findUserById(id);
+        verify(userRepository).findById(id);
+        verify(userRepository).save(dbUser);
         verify(userMapper).toDto(dbUser);
 
         assertEquals(result, expectedUserDto);
@@ -317,14 +317,16 @@ public class UserServiceTest {
         expectedUserDto.setActive(false);
         expectedUserDto.setCreatedAt(LocalDateTime.now());
 
-        when(userRepository.findUserById(id)).thenReturn(Optional.of(dbUser));
+        when(userRepository.findById(id)).thenReturn(Optional.of(dbUser));
+        when(userRepository.save(dbUser)).thenReturn(dbUser);
         when(userMapper.toDto(dbUser)).thenReturn(expectedUserDto);
 
         // Act
         var result = userService.deactivateById(id);
 
         // Assert
-        verify(userRepository).findUserById(id);
+        verify(userRepository).findById(id);
+        verify(userRepository).save(dbUser);
         verify(userMapper).toDto(dbUser);
 
         assertEquals(result, expectedUserDto);

@@ -15,26 +15,5 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
     Optional<User> findUserById(UUID id);
 
-    // methods
-    // User createUser(User user); -> JPA method save(User user)
-    // Page<User> findAll(Specification<User> specification, Pageable pageable);
-    // User updateUserById(UUID id, User user); -> JPA method save(User user)
-    // have already been implemented in JPA repository
-
-    @Modifying
-    @Query(value = """
-        UPDATE users
-        SET active = true, updated_at = now()
-        WHERE id = :id
-    """, nativeQuery = true)
-    void activateUserById(UUID id);
-
-    @Modifying
-    @Query(value = """
-        UPDATE User user
-        SET user.active = false, user.updatedAt = CURRENT_TIMESTAMP
-        WHERE user.id = :id
-    """)
-    void deactivateUserById(UUID id);
-
+    boolean existsUserByEmail(String email);
 }

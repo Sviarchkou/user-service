@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: update
+      author: admin
+      changes:
+        - modifyDataType:
+            tableName: payment_cards
+            columnName: expiration_date
+            newDataType: date

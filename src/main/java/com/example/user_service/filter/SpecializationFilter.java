@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserFilter {
-    private String name = "";
-    private String surname = "";
+public class SpecializationFilter {
+    private String name;
+    private String surname;
 }

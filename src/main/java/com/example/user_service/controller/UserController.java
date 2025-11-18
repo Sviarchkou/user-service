@@ -2,7 +2,7 @@ package com.example.user_service.controller;
 
 import com.example.user_service.dto.PaymentCardDto;
 import com.example.user_service.dto.UserDto;
-import com.example.user_service.filter.UserFilter;
+import com.example.user_service.filter.SpecializationFilter;
 import com.example.user_service.service.PaymentCardService;
 import com.example.user_service.service.UserService;
 import jakarta.validation.Valid;
@@ -32,8 +32,8 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserDto>> getAll(@ModelAttribute UserFilter userFilter, @PageableDefault(size = 20, sort = "name") Pageable pageable){
-        return ResponseEntity.ok(userService.getAll(pageable, userFilter));
+    public ResponseEntity<Page<UserDto>> getAll(@ModelAttribute SpecializationFilter specializationFilter, @PageableDefault(size = 20, sort = "name") Pageable pageable){
+        return ResponseEntity.ok(userService.getAll(pageable, specializationFilter));
     }
 
     @GetMapping("{id}/cards")
@@ -51,9 +51,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.updateById(id, userDto));
     }
 
-    @PutMapping
-    public ResponseEntity<UserDto> update(@RequestBody @Validated(UserDto.UpdateGroup.class) UserDto userDto){
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.update(userDto));
+    @PutMapping("{id}/activate")
+    public ResponseEntity<UserDto> activateById(@PathVariable UUID id){
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.activateById(id));
+    }
+
+    @PutMapping("{id}/deactivate")
+    public ResponseEntity<UserDto> deactivateById(@PathVariable UUID id){
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.deactivateById(id));
     }
 
     @PatchMapping("{id}")

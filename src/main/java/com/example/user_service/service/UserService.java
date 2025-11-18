@@ -2,15 +2,13 @@ package com.example.user_service.service;
 
 import com.example.user_service.dto.UserDto;
 import com.example.user_service.entity.User;
+import com.example.user_service.exception.EmailAlreadyExistsException;
 import com.example.user_service.exception.UserNotFoundException;
-import com.example.user_service.filter.UserFilter;
+import com.example.user_service.filter.SpecializationFilter;
 import com.example.user_service.mapper.UserMapper;
 import com.example.user_service.repository.UserRepository;
 import com.example.user_service.specification.UserSpecification;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -19,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -28,21 +25,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final Validator validator;
 
     @CachePut(value = "users", key = "#result.id")
     public UserDto create(UserDto userDto){
-        User user = userMapper.toEntity(userDto);
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(userDto);
-        if (!violations.isEmpty()){
-            StringBuilder sb = new StringBuilder();
-            for (ConstraintViolation<UserDto> constraintViolation : violations) {
-                sb.append(constraintViolation.getMessage());
-            }
-            throw new ConstraintViolationException("Error occurred: " + sb, violations);
+        if (userRepository.existsUserByEmail(userDto.getEmail())) {
+            throw new EmailAlreadyExistsException("User with email: %s already exists".formatted(userDto.getEmail()));
         }
+        User user = userMapper.toEntity(userDto);
         user = userRepository.save(user);
-        user.setUpdatedAt(null);
         return userMapper.toDto(user);
     }
 
@@ -58,25 +48,19 @@ public class UserService {
                 .map(userMapper::toDto);
     }
 
-    public Page<UserDto> getAll(Pageable pageable, UserFilter userFilter){
-        return userRepository.findAll(UserSpecification.userFilterSpecification(userFilter), pageable)
+    public Page<UserDto> getAll(Pageable pageable, SpecializationFilter specializationFilter){
+        return userRepository.findAll(UserSpecification.userFilterSpecification(specializationFilter), pageable)
                 .map(userMapper::toDto);
     }
 
     @CachePut(value = "users", key = "#id")
     @Transactional
     public UserDto updateById(UUID id, UserDto userDto){
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(userDto, UserDto.UpdateGroup.class);
-        if (!violations.isEmpty()){
-            StringBuilder sb = new StringBuilder();
-            for (ConstraintViolation<UserDto> constraintViolation : violations) {
-                sb.append(constraintViolation.getMessage());
-            }
-            throw new ConstraintViolationException("Error occurred: " + sb, violations);
-        }
-
         User user = userRepository.findUserById(id).orElseThrow(
                 () -> new UserNotFoundException("User with id: %s is not found".formatted(id)));
+        if (userRepository.existsUserByEmail(userDto.getEmail())) {
+            throw new EmailAlreadyExistsException("User with email: %s already exists".formatted(userDto.getEmail()));
+        }
         user.setName(userDto.getName());
         user.setSurname(userDto.getSurname());
         user.setEmail(userDto.getEmail());
@@ -93,28 +77,22 @@ public class UserService {
     @CachePut(value = "users", key = "#id")
     @Transactional
     public UserDto activateById(UUID id){
-        try {
-            userRepository.activateUserById(id);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Can not activate user with id: " + id, e);
-        }
-        return userMapper.toDto(userRepository.findUserById(id).orElseThrow(
-                () -> new UserNotFoundException("User with id: %s is not found".formatted(id))));
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new UserNotFoundException("User with id: %s is not found".formatted(id)));
+        user.setActive(true);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @CachePut(value = "users", key = "#id")
     @Transactional
     public UserDto deactivateById(UUID id){
-        try {
-            userRepository.deactivateUserById(id);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Can not deactivate user with id: " + id, e);
-        }
-        return userMapper.toDto(userRepository.findUserById(id).orElseThrow(
-                () -> new UserNotFoundException("User with id: %s is not found".formatted(id))));
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new UserNotFoundException("User with id: %s is not found".formatted(id)));
+        user.setActive(false);
+        return userMapper.toDto(userRepository.save(user));
     }
 
-    @CacheEvict(value = "users", key = "#id", beforeInvocation = true)
+    @CacheEvict(value = "users", key = "#id")
     @Transactional
     public void deleteById(UUID id){
         userRepository.deleteById(id);

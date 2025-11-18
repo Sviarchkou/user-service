@@ -1,3 +1,6 @@
 databaseChangeLog:
   - include:
       file: db/changelog/init_db.yml
+  - include:
+      file: db/changelog/18-11-25-update-card-expiration-date-format.yaml
+

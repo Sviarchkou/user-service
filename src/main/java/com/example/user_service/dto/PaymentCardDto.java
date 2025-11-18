@@ -1,14 +1,18 @@
 package com.example.user_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.UUID;
 
 @Data
@@ -31,11 +35,9 @@ public class PaymentCardDto implements Serializable {
     @Size(max = 255)
     String holder;
 
-    @Pattern(
-            regexp = "^(0[1-9]|1[0-2])/\\d{2}$",
-            message = "Expiration date must be in format MM/YY, with month from 01 to 12"
-    )
-    String expirationDate;
+    @DateTimeFormat(pattern = "yyyy-MM-DD")
+    //@JsonFormat(pattern = )
+    LocalDate expirationDate;
 
     boolean active = false;
 

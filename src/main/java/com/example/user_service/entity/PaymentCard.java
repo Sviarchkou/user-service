@@ -1,33 +1,35 @@
 package com.example.user_service.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
 @Entity
 @Table(name = "payment_cards")
-@EnableJpaAuditing
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 public class PaymentCard {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Exclude
     UUID id;
 
-    @EqualsAndHashCode.Exclude
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
+    @EqualsAndHashCode.Exclude
     User user;
 
     @Column(name = "number", nullable = false)
@@ -37,7 +39,7 @@ public class PaymentCard {
     String holder;
 
     @Column(name = "expiration_date", nullable = false)
-    String expirationDate;
+    LocalDate expirationDate;
 
     boolean active = false;
 
@@ -46,6 +48,6 @@ public class PaymentCard {
     LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at", insertable = false)
+    @Column(name = "updated_at")
     LocalDateTime updatedAt;
 }

@@ -15,38 +15,20 @@ import java.util.UUID;
 @Repository
 public interface PaymentCardRepository extends JpaRepository<PaymentCard, UUID>, JpaSpecificationExecutor<PaymentCard> {
 
-    //  methods:
-    //      PaymentCard create(PaymentCard paymentCard); -> JPA method save(PaymentCard paymentCard)
-    //      PaymentCard updatePaymentCardById(UUID id, PaymentCard paymentCard); -> JPA method save(PaymentCard paymentCard)
-    //      @NonNull
-    //      Page<PaymentCard> findAll(@NonNull Pageable pageable);
-    //  have already been implemented in JPA Repository
-
-    //  Logic of maximum count of user's payment cards (max 5 card) will be brought to the service layer
-
     Optional<PaymentCard> findPaymentCardById(UUID id);
+    boolean existsByNumber(String number);
 
     @Query(value = """
         SELECT * FROM payment_cards p
-        WHERE p.user_id = :user_id
+        WHERE p.user_id = :userId
     """, nativeQuery = true)
-    List<PaymentCard> findAllByUserId(@Param("user_id") UUID user_id);
+    List<PaymentCard> findAllByUserId(@Param("userId") UUID userId);
 
-    int countPaymentCardByUserId(UUID user_id);
-
-    @Modifying
     @Query(value = """
-        UPDATE PaymentCard p
-        SET p.active = true, p.updatedAt = CURRENT_TIMESTAMP
-        WHERE p.id = :id
+        SELECT COUNT(*) FROM PaymentCard p
+        JOIN User u ON p.user.id = u.id
+        WHERE u.id = :userId
     """)
-    void activatePaymentCardById(@Param("id") UUID id);
+    int countPaymentCardByUserId(@Param("userId") UUID userId);
 
-    @Modifying
-    @Query(value = """
-        UPDATE PaymentCard p
-        SET p.active = false, p.updatedAt = CURRENT_TIMESTAMP
-        WHERE p.id = :id
-    """)
-    void deactivatePaymentCardById(@Param("id") UUID id);
 }

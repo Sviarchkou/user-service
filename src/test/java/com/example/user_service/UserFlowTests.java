@@ -147,35 +147,6 @@ class UserFlowTests {
 	}
 
 	@Test
-	void updateUser(){
-		UserDto userDto = new UserDto();
-		userDto.setName("Cristiano");
-		userDto.setSurname("Ronaldo");
-		userDto.setEmail("cristiano@gmail.com");
-
-		userDto = userService.create(userDto);
-
-		userDto.setBirthDate(LocalDate.of(1985, 2, 5));
-		userDto.setEmail("suuuuuuuuiiiiiiiii@gmail.ru");
-
-		ResponseEntity<UserDto> response = restTemplate.exchange(
-				"/api/v1/users",
-				HttpMethod.PUT,
-				new HttpEntity<>(userDto),
-				UserDto.class);
-
-		assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-		assertNotNull(response.getBody());
-		assertNotNull(response.getBody().getId());
-		assertEquals(userDto.getName(), response.getBody().getName());
-		assertEquals(userDto.getSurname(), response.getBody().getSurname());
-		assertEquals(userDto.getBirthDate(), response.getBody().getBirthDate());
-		assertEquals(userDto.getEmail(), response.getBody().getEmail());
-		assertNotNull(response.getBody().getCreatedAt());
-		assertNotNull(response.getBody().getUpdatedAt());
-	}
-
-	@Test
 	void updateUserById(){
 		UserDto userDto = new UserDto();
 		userDto.setName("Leonel");

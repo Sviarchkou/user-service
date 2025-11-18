@@ -3,7 +3,7 @@ package com.example.user_service;
 import com.example.user_service.dto.PaymentCardDto;
 import com.example.user_service.entity.PaymentCard;
 import com.example.user_service.entity.User;
-import com.example.user_service.filter.UserFilter;
+import com.example.user_service.filter.SpecializationFilter;
 import com.example.user_service.mapper.PaymentCardMapper;
 import com.example.user_service.repository.PaymentCardRepository;
 import com.example.user_service.service.PaymentCardService;
@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -52,13 +53,13 @@ public class PaymentCardServiceTest {
         paymentCardDto.setNumber("1234567890123456");
         paymentCardDto.setUserId(userId);
         paymentCardDto.setHolder("NAME SURNAME");
-        paymentCardDto.setExpirationDate("12/28");
+        paymentCardDto.setExpirationDate(LocalDate.of(2028, 12, 31));
 
         PaymentCard paymentCard = new PaymentCard();
         paymentCard.setNumber("1234567890123456");
         paymentCard.setUser(user);
         paymentCard.setHolder("NAME SURNAME");
-        paymentCard.setExpirationDate("12/28");
+        paymentCard.setExpirationDate(LocalDate.of(2028, 12, 31));
 
         var id = UUID.randomUUID();
 
@@ -67,14 +68,14 @@ public class PaymentCardServiceTest {
         paymentCardDb.setNumber("1234567890123456");
         paymentCardDb.setUser(user);
         paymentCardDb.setHolder("NAME SURNAME");
-        paymentCardDb.setExpirationDate("12/28");
+        paymentCardDb.setExpirationDate(LocalDate.of(2028, 12, 31));
 
         PaymentCardDto expectedPaymentCardDto = new PaymentCardDto();
         expectedPaymentCardDto.setId(id);
         expectedPaymentCardDto.setNumber("1234567890123456");
         expectedPaymentCardDto.setUserId(userId);
         expectedPaymentCardDto.setHolder("NAME SURNAME");
-        expectedPaymentCardDto.setExpirationDate("12/28");
+        expectedPaymentCardDto.setExpirationDate(LocalDate.of(2028, 12, 31));
 
         when(paymentCardMapper.toEntity(paymentCardDto)).thenReturn(paymentCard);
         when(paymentCardRepository.save(paymentCard)).thenReturn(paymentCardDb);
@@ -84,7 +85,6 @@ public class PaymentCardServiceTest {
         var result = paymentCardService.create(paymentCardDto);
 
         // Assert
-        verify(validator).validate(paymentCardDto);
         verify(paymentCardMapper).toEntity(paymentCardDto);
         verify(paymentCardRepository).save(paymentCard);
         verify(paymentCardMapper).toDto(paymentCardDb);
@@ -105,14 +105,14 @@ public class PaymentCardServiceTest {
         paymentCardDb.setNumber("1234567890123456");
         paymentCardDb.setUser(user);
         paymentCardDb.setHolder("NAME SURNAME");
-        paymentCardDb.setExpirationDate("12/28");
+        paymentCardDb.setExpirationDate(LocalDate.of(2028, 12, 31));
 
         PaymentCardDto expectedPaymentCardDto = new PaymentCardDto();
         expectedPaymentCardDto.setId(id);
         expectedPaymentCardDto.setNumber("1234567890123456");
         expectedPaymentCardDto.setUserId(userId);
         expectedPaymentCardDto.setHolder("NAME SURNAME");
-        expectedPaymentCardDto.setExpirationDate("12/28");
+        expectedPaymentCardDto.setExpirationDate(LocalDate.of(2028, 12, 31));
 
         when(paymentCardRepository.findPaymentCardById(id)).thenReturn(Optional.of(paymentCardDb));
         when(paymentCardMapper.toDto(paymentCardDb)).thenReturn(expectedPaymentCardDto);
@@ -145,7 +145,7 @@ public class PaymentCardServiceTest {
     void shouldReturnPageOfPaymentCardDto() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 5, Sort.by("number"));
-        UserFilter filter = new UserFilter("ja", "s");
+        SpecializationFilter filter = new SpecializationFilter("ja", "s");
 
         User user1 = new User();
         var user1Id = UUID.randomUUID();
@@ -165,7 +165,7 @@ public class PaymentCardServiceTest {
         p1.setNumber("1234567890123456");
         p1.setUser(user1);
         p1.setHolder("NAME SURNAME");
-        p1.setExpirationDate("12/28");
+        p1.setExpirationDate(LocalDate.of(2028, 12, 31));
         p1.setActive(true);
 
         PaymentCard p2 = new PaymentCard();
@@ -174,7 +174,7 @@ public class PaymentCardServiceTest {
         p2.setNumber("2345678901234561");
         p2.setUser(user1);
         p2.setHolder("NAMEE SURNAMEE");
-        p2.setExpirationDate("08/29");
+        p2.setExpirationDate(LocalDate.of(2029, 8, 30));
         p2.setActive(true);
 
         PaymentCard p3 = new PaymentCard();
@@ -183,7 +183,7 @@ public class PaymentCardServiceTest {
         p3.setNumber("3456789012345612");
         p3.setUser(user1);
         p3.setHolder("NAM SURNAM");
-        p3.setExpirationDate("01/35");
+        p3.setExpirationDate(LocalDate.of(2035, 1, 31));
         p3.setActive(true);
 
         PaymentCard p4 = new PaymentCard();
@@ -192,7 +192,7 @@ public class PaymentCardServiceTest {
         p4.setNumber("4567890123456123");
         p4.setUser(user2);
         p4.setHolder("NA SURNA");
-        p4.setExpirationDate("10/30");
+        p4.setExpirationDate(LocalDate.of(2030, 10, 30));
         p4.setActive(true);
 
         PaymentCard p5 = new PaymentCard();
@@ -201,9 +201,8 @@ public class PaymentCardServiceTest {
         p5.setNumber("5678901234561234");
         p5.setUser(user2);
         p5.setHolder("NAMEME SURNAMEME");
-        p5.setExpirationDate("04/25");
+        p5.setExpirationDate(LocalDate.of(2025, 4, 30));
         p5.setActive(false);
-
 
         Page<PaymentCard> page = new PageImpl<>(List.of(p1, p2, p3, p4, p5), pageable, 3);
 
@@ -212,7 +211,7 @@ public class PaymentCardServiceTest {
         p1Dto.setNumber("1234567890123456");
         p1Dto.setUserId(user1.getId());
         p1Dto.setHolder("NAME SURNAME");
-        p1Dto.setExpirationDate("12/28");
+        p1Dto.setExpirationDate(LocalDate.of(2028, 12, 31));
         p1Dto.setActive(true);
 
         PaymentCardDto p2Dto = new PaymentCardDto();
@@ -220,7 +219,7 @@ public class PaymentCardServiceTest {
         p2Dto.setNumber("2345678901234561");
         p2Dto.setUserId(user1.getId());
         p2Dto.setHolder("NAMEE SURNAMEE");
-        p2Dto.setExpirationDate("08/29");
+        p2Dto.setExpirationDate(LocalDate.of(2028, 12, 31));
         p2Dto.setActive(true);
 
         PaymentCardDto p3Dto = new PaymentCardDto();
@@ -228,7 +227,7 @@ public class PaymentCardServiceTest {
         p3Dto.setNumber("3456789012345612");
         p3Dto.setUserId(user1.getId());
         p3Dto.setHolder("NAM SURNAM");
-        p3Dto.setExpirationDate("01/35");
+        p3Dto.setExpirationDate(LocalDate.of(2035, 1, 31));
         p3Dto.setActive(true);
 
         PaymentCardDto p4Dto = new PaymentCardDto();
@@ -236,7 +235,7 @@ public class PaymentCardServiceTest {
         p4Dto.setNumber("4567890123456123");
         p4Dto.setUserId(user2.getId());
         p4Dto.setHolder("NA SURNA");
-        p4Dto.setExpirationDate("10/30");
+        p4Dto.setExpirationDate(LocalDate.of(2030, 10, 30));
         p4Dto.setActive(true);
 
         PaymentCardDto p5Dto = new PaymentCardDto();
@@ -244,7 +243,7 @@ public class PaymentCardServiceTest {
         p5Dto.setNumber("5678901234561234");
         p5Dto.setUserId(user2.getId());
         p5Dto.setHolder("NAMEME SURNAMEME");
-        p5Dto.setExpirationDate("04/25");
+        p5Dto.setExpirationDate(LocalDate.of(2025, 3, 31));
         p5Dto.setActive(false);
 
         Page<PaymentCardDto> expectedPage = new PageImpl<>(List.of(p1Dto, p2Dto, p3Dto, p4Dto, p5Dto), pageable, 3);
@@ -283,7 +282,7 @@ public class PaymentCardServiceTest {
         p1.setNumber("1234567890123456");
         p1.setUser(user);
         p1.setHolder("NAME SURNAME");
-        p1.setExpirationDate("12/28");
+        p1.setExpirationDate(LocalDate.of(2028, 12, 31));
         p1.setActive(true);
 
         PaymentCard p2 = new PaymentCard();
@@ -292,7 +291,7 @@ public class PaymentCardServiceTest {
         p2.setNumber("2345678901234561");
         p2.setUser(user);
         p2.setHolder("NAMEE SURNAMEE");
-        p2.setExpirationDate("08/29");
+        p2.setExpirationDate(LocalDate.of(2029, 7, 31));
         p2.setActive(true);
 
         PaymentCard p3 = new PaymentCard();
@@ -301,7 +300,7 @@ public class PaymentCardServiceTest {
         p3.setNumber("3456789012345612");
         p3.setUser(user);
         p3.setHolder("NAM SURNAM");
-        p3.setExpirationDate("01/35");
+        p3.setExpirationDate(LocalDate.of(2035, 1, 31));
         p3.setActive(true);
 
         PaymentCard p4 = new PaymentCard();
@@ -310,7 +309,7 @@ public class PaymentCardServiceTest {
         p4.setNumber("4567890123456123");
         p4.setUser(user);
         p4.setHolder("NA SURNA");
-        p4.setExpirationDate("10/24");
+        p4.setExpirationDate(LocalDate.of(2024, 10, 31));
         p4.setActive(false);
 
         List<PaymentCard> list = List.of(p1, p2, p3, p4);
@@ -320,7 +319,7 @@ public class PaymentCardServiceTest {
         p1Dto.setNumber("1234567890123456");
         p1Dto.setUserId(user.getId());
         p1Dto.setHolder("NAME SURNAME");
-        p1Dto.setExpirationDate("12/28");
+        p1Dto.setExpirationDate(LocalDate.of(2028, 12, 31));
         p1Dto.setActive(true);
 
         PaymentCardDto p2Dto = new PaymentCardDto();
@@ -328,7 +327,7 @@ public class PaymentCardServiceTest {
         p2Dto.setNumber("2345678901234561");
         p2Dto.setUserId(user.getId());
         p2Dto.setHolder("NAMEE SURNAMEE");
-        p2Dto.setExpirationDate("08/29");
+        p2Dto.setExpirationDate(LocalDate.of(2029, 7, 31));
         p2Dto.setActive(true);
 
         PaymentCardDto p3Dto = new PaymentCardDto();
@@ -336,7 +335,7 @@ public class PaymentCardServiceTest {
         p3Dto.setNumber("3456789012345612");
         p3Dto.setUserId(user.getId());
         p3Dto.setHolder("NAM SURNAM");
-        p3Dto.setExpirationDate("01/35");
+        p3Dto.setExpirationDate(LocalDate.of(2035, 1, 31));
         p3Dto.setActive(true);
 
         PaymentCardDto p4Dto = new PaymentCardDto();
@@ -344,7 +343,7 @@ public class PaymentCardServiceTest {
         p4Dto.setNumber("4567890123456123");
         p4Dto.setUserId(user.getId());
         p4Dto.setHolder("NA SURNA");
-        p4Dto.setExpirationDate("10/24");
+        p4Dto.setExpirationDate(LocalDate.of(2024, 10, 31));
         p4Dto.setActive(false);
 
         List<PaymentCardDto> listDto = List.of(p1Dto, p2Dto, p3Dto, p4Dto);
@@ -382,7 +381,7 @@ public class PaymentCardServiceTest {
         paymentCardDto.setNumber("0987654321654321");
         paymentCardDto.setUserId(userId);
         paymentCardDto.setHolder("EMANRUS EMAN");
-        paymentCardDto.setExpirationDate("09/31");
+        paymentCardDto.setExpirationDate(LocalDate.of(2031, 9, 30));
         paymentCardDto.setCreatedAt(createdAt);
 
         PaymentCard paymentCard = new PaymentCard();
@@ -390,7 +389,7 @@ public class PaymentCardServiceTest {
         paymentCard.setNumber("1234567890123456");
         paymentCard.setUser(user);
         paymentCard.setHolder("NAME SURNAME");
-        paymentCard.setExpirationDate("12/28");
+        paymentCard.setExpirationDate(LocalDate.of(2028, 12, 31));
         paymentCard.setCreatedAt(createdAt);
 
         PaymentCard paymentCardDb = new PaymentCard();
@@ -398,7 +397,7 @@ public class PaymentCardServiceTest {
         paymentCardDb.setNumber("0987654321654321");
         paymentCardDb.setUser(user);
         paymentCardDb.setHolder("EMANRUS EMAN");
-        paymentCardDb.setExpirationDate("09/31");
+        paymentCardDb.setExpirationDate(LocalDate.of(2031, 9, 30));
         paymentCardDb.setCreatedAt(createdAt);
         paymentCardDb.setUpdatedAt(updatedAt);
 
@@ -407,7 +406,7 @@ public class PaymentCardServiceTest {
         expectedPaymentCardDto.setNumber("0987654321654321");
         expectedPaymentCardDto.setUserId(userId);
         expectedPaymentCardDto.setHolder("EMANRUS EMAN");
-        expectedPaymentCardDto.setExpirationDate("09/31");
+        expectedPaymentCardDto.setExpirationDate(LocalDate.of(2031, 9, 30));
         expectedPaymentCardDto.setCreatedAt(createdAt);
         expectedPaymentCardDto.setUpdatedAt(updatedAt);
 
@@ -419,7 +418,6 @@ public class PaymentCardServiceTest {
         var result = paymentCardService.update(paymentCardDto);
 
         // Assert
-        verify(validator).validate(paymentCardDto, PaymentCardDto.UpdateGroup.class);
         verify(paymentCardRepository).saveAndFlush(paymentCard);
         verify(paymentCardRepository).findPaymentCardById(id);
         verify(paymentCardMapper).toDto(paymentCardDb);
@@ -442,7 +440,7 @@ public class PaymentCardServiceTest {
         paymentCardDb.setNumber("0987654321654321");
         paymentCardDb.setUser(user);
         paymentCardDb.setHolder("EMANRUS EMAN");
-        paymentCardDb.setExpirationDate("09/31");
+        paymentCardDb.setExpirationDate(LocalDate.of(2031, 9, 30));
         paymentCardDb.setActive(true);
         paymentCardDb.setCreatedAt(createdAt);
         paymentCardDb.setUpdatedAt(updatedAt);
@@ -452,19 +450,21 @@ public class PaymentCardServiceTest {
         expectedPaymentCardDto.setNumber("0987654321654321");
         expectedPaymentCardDto.setUserId(userId);
         expectedPaymentCardDto.setHolder("EMANRUS EMAN");
-        expectedPaymentCardDto.setExpirationDate("09/31");
+        expectedPaymentCardDto.setExpirationDate(LocalDate.of(2031, 9, 30));
         expectedPaymentCardDto.setActive(true);
         expectedPaymentCardDto.setCreatedAt(createdAt);
         expectedPaymentCardDto.setUpdatedAt(updatedAt);
 
-        when(paymentCardRepository.findPaymentCardById(id)).thenReturn(Optional.of(paymentCardDb));
+        when(paymentCardRepository.findById(id)).thenReturn(Optional.of(paymentCardDb));
+        when(paymentCardRepository.save(paymentCardDb)).thenReturn(paymentCardDb);
         when(paymentCardMapper.toDto(paymentCardDb)).thenReturn(expectedPaymentCardDto);
 
         // Act
         var result = paymentCardService.activateById(id);
 
         // Assert
-        verify(paymentCardRepository).findPaymentCardById(id);
+        verify(paymentCardRepository).findById(id);
+        verify(paymentCardRepository).save(paymentCardDb);
         verify(paymentCardMapper).toDto(paymentCardDb);
 
         assertEquals(result, expectedPaymentCardDto);
@@ -485,7 +485,7 @@ public class PaymentCardServiceTest {
         paymentCardDb.setNumber("0987654321654321");
         paymentCardDb.setUser(user);
         paymentCardDb.setHolder("EMANRUS EMAN");
-        paymentCardDb.setExpirationDate("09/31");
+        paymentCardDb.setExpirationDate(LocalDate.of(2031, 9, 30));
         paymentCardDb.setActive(false);
         paymentCardDb.setCreatedAt(createdAt);
         paymentCardDb.setUpdatedAt(updatedAt);
@@ -495,19 +495,21 @@ public class PaymentCardServiceTest {
         expectedPaymentCardDto.setNumber("0987654321654321");
         expectedPaymentCardDto.setUserId(userId);
         expectedPaymentCardDto.setHolder("EMANRUS EMAN");
-        expectedPaymentCardDto.setExpirationDate("09/31");
+        expectedPaymentCardDto.setExpirationDate(LocalDate.of(2031, 9, 30));
         expectedPaymentCardDto.setActive(false);
         expectedPaymentCardDto.setCreatedAt(createdAt);
         expectedPaymentCardDto.setUpdatedAt(updatedAt);
 
-        when(paymentCardRepository.findPaymentCardById(id)).thenReturn(Optional.of(paymentCardDb));
+        when(paymentCardRepository.findById(id)).thenReturn(Optional.of(paymentCardDb));
+        when(paymentCardRepository.save(paymentCardDb)).thenReturn(paymentCardDb);
         when(paymentCardMapper.toDto(paymentCardDb)).thenReturn(expectedPaymentCardDto);
 
         // Act
         var result = paymentCardService.deactivateById(id);
 
         // Assert
-        verify(paymentCardRepository).findPaymentCardById(id);
+        verify(paymentCardRepository).findById(id);
+        verify(paymentCardRepository).save(paymentCardDb);
         verify(paymentCardMapper).toDto(paymentCardDb);
 
         assertEquals(result, expectedPaymentCardDto);

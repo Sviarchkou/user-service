@@ -1,14 +1,15 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:9876/dev_db
-    username: dev_user
-    password: dev_pass
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASS}
   cache:
     redis:
       time-to-live: PT1M
   data:
     redis:
-      host: localhost
-      port: 6370
-      password: dev_cache_pass
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
 
