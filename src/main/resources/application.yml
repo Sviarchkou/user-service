@@ -18,3 +18,8 @@ spring:
     redis:
       cache-null-values: false
 
+security:
+  constants:
+    jwt:
+      secret: ${JWT_SECRET}
+
