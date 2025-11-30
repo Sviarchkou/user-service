@@ -13,10 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.GenericContainer;
@@ -43,7 +40,7 @@ public class PaymentCardFlowTests {
 
     @Container
     @ServiceConnection
-    public static final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:latest"))
+    private static final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:latest"))
             .withExposedPorts(6379);
 
     @Autowired
@@ -54,6 +51,8 @@ public class PaymentCardFlowTests {
     private PaymentCardService paymentCardService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TestJwtTokenGenerator testJwtTokenGenerator;
 
     @Test
     void createPaymentCard(){
@@ -63,14 +62,25 @@ public class PaymentCardFlowTests {
         user.setEmail("heheejackson@gmail.com");
         user = userRepository.save(user);
 
-
         PaymentCardDto paymentCardDto = new PaymentCardDto();
         paymentCardDto.setNumber("1234567890123456");
         paymentCardDto.setUserId(user.getId());
         paymentCardDto.setHolder("NAME SURNAME");
         paymentCardDto.setExpirationDate(LocalDate.of(2028, 12, 31));
 
-        ResponseEntity<PaymentCardDto> response = restTemplate.postForEntity("/api/v1/cards", paymentCardDto, PaymentCardDto.class);
+        var token = testJwtTokenGenerator.generateAccessToken("jackson", user.getId(), List.of("ROLE_USER"));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+        // ResponseEntity<PaymentCardDto> response = restTemplate.postForEntity("/api/v1/cards", paymentCardDto, PaymentCardDto.class);
+
+        ResponseEntity<PaymentCardDto> response = restTemplate.exchange(
+                "/api/v1/cards",
+                HttpMethod.POST,
+                new HttpEntity<>(paymentCardDto, headers),
+                new ParameterizedTypeReference<>() {}
+        );
+
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().getId());
@@ -98,7 +108,13 @@ public class PaymentCardFlowTests {
 
         paymentCardDto = paymentCardService.create(paymentCardDto);
 
-        var response = restTemplate.getForEntity("/api/v1/cards/" + paymentCardDto.getId(), PaymentCardDto.class);
+        ResponseEntity<PaymentCardDto> response = restTemplate.exchange(
+                "/api/v1/cards/" + paymentCardDto.getId(),
+                HttpMethod.GET,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
+                new ParameterizedTypeReference<>() {}
+        );
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().getId());
@@ -111,7 +127,12 @@ public class PaymentCardFlowTests {
 
     @Test
     void getUserByIdWhenDoesNotExists(){
-        var response = restTemplate.getForEntity("/api/v1/cards/" + UUID.randomUUID(), UserDto.class);
+        ResponseEntity<PaymentCardDto> response = restTemplate.exchange(
+                "/api/v1/cards/" + UUID.randomUUID(),
+                HttpMethod.GET,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
+                new ParameterizedTypeReference<>() {}
+        );
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
@@ -171,11 +192,10 @@ public class PaymentCardFlowTests {
         paymentCardRepository.save(p4);
         paymentCardRepository.save(p5);
 
-        //// Type definition error: [simple type, class org.springframework.data.domain.Sort]
         ResponseEntity<PageResponse<PaymentCardDto>> response = restTemplate.exchange(
                 "/api/v1/cards?name=j&surname=smith&page=0&size=3&sort=number,asc",
                 HttpMethod.GET,
-                null,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
                 new ParameterizedTypeReference<>() {}
         );
 
@@ -235,10 +255,9 @@ public class PaymentCardFlowTests {
         ResponseEntity<List<PaymentCardDto>> response = restTemplate.exchange(
                 "/api/v1/users/" + user.getId() + "/cards",
                 HttpMethod.GET,
-                null,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
                 new ParameterizedTypeReference<>() {}
         );
-
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -274,10 +293,14 @@ public class PaymentCardFlowTests {
         paymentCardDto.setHolder("MESSI LEONEL");
         paymentCardDto.setNumber("9999999999999999");
 
+        var token = testJwtTokenGenerator.generateAdminAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
         ResponseEntity<PaymentCardDto> response = restTemplate.exchange(
                 "/api/v1/cards/" + paymentCardDto.getId(),
                 HttpMethod.PUT,
-                new HttpEntity<>(paymentCardDto),
+                new HttpEntity<>(paymentCardDto, headers),
                 PaymentCardDto.class);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
@@ -310,15 +333,15 @@ public class PaymentCardFlowTests {
         paymentCardDto = paymentCardService.create(paymentCardDto);
 
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/api/v1/cards/" + paymentCardDto.getId() + "/activate",
+                "/api/v1/cards/" + paymentCardDto.getId() + "/deactivate",
                 HttpMethod.PUT,
-                null,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
                 Void.class);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
 
         var paymentCard = paymentCardRepository.findPaymentCardById(paymentCardDto.getId()).orElseThrow();
-        assertTrue(paymentCard.isActive());
+        assertTrue(!paymentCard.isActive());
     }
 
     @Test
@@ -342,7 +365,7 @@ public class PaymentCardFlowTests {
         ResponseEntity<Void> response = restTemplate.exchange(
                 "/api/v1/cards/" + paymentCard.getId(),
                 HttpMethod.DELETE,
-                null,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
                 Void.class
         );
 

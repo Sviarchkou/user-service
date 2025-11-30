@@ -23,6 +23,7 @@ public class PaymentCardController {
     private final PaymentCardService paymentCardService;
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or @userSecurity.hasPaymentCard(authentication, #id)")
+    //@PreAuthorize("hasAuthority('ROLE_ADMIN') or #id == authentication.principal.claims['sub']")
     @GetMapping("{id}")
     public ResponseEntity<PaymentCardDto> getById(@PathVariable UUID id){
         return ResponseEntity.ok(paymentCardService.getById(id));
@@ -34,7 +35,6 @@ public class PaymentCardController {
         return ResponseEntity.ok(paymentCardService.getAll(pageable, specializationFilter));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<PaymentCardDto> create(@RequestBody @Valid PaymentCardDto paymentCardDto){
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentCardService.create(paymentCardDto));
