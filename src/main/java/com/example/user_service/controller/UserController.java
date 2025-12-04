@@ -3,6 +3,7 @@ package com.example.user_service.controller;
 import com.example.user_service.dto.PaymentCardDto;
 import com.example.user_service.dto.UserDto;
 import com.example.user_service.filter.SpecializationFilter;
+import com.example.user_service.request.UserIdListRequest;
 import com.example.user_service.service.PaymentCardService;
 import com.example.user_service.service.UserService;
 import jakarta.validation.Valid;
@@ -37,6 +38,12 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Page<UserDto>> getAll(@ModelAttribute SpecializationFilter specializationFilter, @PageableDefault(size = 20, sort = "name") Pageable pageable){
         return ResponseEntity.ok(userService.getAll(pageable, specializationFilter));
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping("in")
+    public ResponseEntity<List<UserDto>> getAllByUserIdList(@Valid UserIdListRequest request){
+        return ResponseEntity.ok(userService.getAllByUserIdList(request));
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or @userSecurity.hasPaymentCard(authentication, #id)")
