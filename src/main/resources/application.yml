@@ -31,7 +31,7 @@ management:
       probability: 1.0
   otlp:
     tracing:
-      endpoint: ${TEMPO_ENDPOINT:http://tempo:4317}
+      endpoint: ${TEMPO_ENDPOINT:http://tempo:4318}
 
 security:
   constants:
