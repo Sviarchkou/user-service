@@ -42,7 +42,7 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("in")
-    public ResponseEntity<List<UserDto>> getAllByUserIdList(@Valid UserIdListRequest request){
+    public ResponseEntity<List<UserDto>> getAllByUserIdList(@RequestBody @Valid UserIdListRequest request){
         return ResponseEntity.ok(userService.getAllByUserIdList(request));
     }
 

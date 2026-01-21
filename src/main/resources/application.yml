@@ -18,6 +18,21 @@ spring:
     redis:
       cache-null-values: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${TEMPO_ENDPOINT:http://tempo:4317}
+
 security:
   constants:
     jwt:
