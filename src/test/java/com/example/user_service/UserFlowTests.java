@@ -1,7 +1,6 @@
 package com.example.user_service;
 
 import com.example.user_service.dto.UserDto;
-import com.example.user_service.repository.PaymentCardRepository;
 import com.example.user_service.repository.UserRepository;
 import com.example.user_service.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -10,11 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -33,24 +28,25 @@ class UserFlowTests {
 
 	@Container
 	@ServiceConnection
-	private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
+	private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
 
 	@Container
 	@ServiceConnection
-	public static final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:latest"))
+	private static final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:latest"))
 			.withExposedPorts(6379);
 
 	@Autowired
 	private TestRestTemplate restTemplate;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private PaymentCardRepository paymentCardRepository;
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private UserService userService;
+	@Autowired
+    private TestJwtTokenGenerator testJwtTokenGenerator;
 
-	@Test
+    @Test
 	void createUser(){
+
 		UserDto userDto = new UserDto();
 		userDto.setName("Michael");
 		userDto.setSurname("Jackson");
@@ -76,7 +72,15 @@ class UserFlowTests {
 
 		userDto = userService.create(userDto);
 
-		var response = restTemplate.getForEntity("/api/v1/users/" + userDto.getId(), UserDto.class);
+        var requestEntity = testJwtTokenGenerator.generateHttpEntityWithJwt("donald", userDto.getId(), List.of("ROLE_USER"));
+
+        ResponseEntity<UserDto> response = restTemplate.exchange(
+                "/api/v1/users/" + userDto.getId(),
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<>() {}
+        );
+
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(response.getBody());
 		assertNotNull(response.getBody().getId());
@@ -87,7 +91,14 @@ class UserFlowTests {
 
 	@Test
 	void getUserByIdWhenDoesNotExists(){
-		var response = restTemplate.getForEntity("/api/v1/users/" + UUID.randomUUID(), UserDto.class);
+        var requestEntity = testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin();
+
+        ResponseEntity<UserDto> response = restTemplate.exchange(
+                "/api/v1/users/" + UUID.randomUUID(),
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<>() {}
+        );
 		assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 	}
 
@@ -133,7 +144,7 @@ class UserFlowTests {
 		ResponseEntity<PageResponse<UserDto>> response = restTemplate.exchange(
 				"/api/v1/users?name=ja&surname=s&page=0&size=3&sort=email,asc",
 				HttpMethod.GET,
-				null,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
 				new ParameterizedTypeReference<>() {}
 		);
 
@@ -158,10 +169,16 @@ class UserFlowTests {
 		userDto.setBirthDate(LocalDate.of(1987, 6, 24));
 		userDto.setEmail("leomessi@gmail.ru");
 
+        var token = testJwtTokenGenerator.generateAdminAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+        HttpEntity<UserDto> httpEntity = new HttpEntity<>(userDto, headers);
+
 		ResponseEntity<UserDto> response = restTemplate.exchange(
 				"/api/v1/users/" + userDto.getId(),
 				HttpMethod.PUT,
-				new HttpEntity<>(userDto),
+				httpEntity,
 				UserDto.class);
 
 		assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
@@ -186,12 +203,12 @@ class UserFlowTests {
 		userDto = userService.create(userDto);
 
 		ResponseEntity<Void> response = restTemplate.exchange(
-				"/api/v1/users/" + userDto.getId() + "?active=true",
-				HttpMethod.PATCH,
-				null,
+				"/api/v1/users/" + userDto.getId() + "/activate",
+				HttpMethod.PUT,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
 				Void.class);
 
-		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+		assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
 
 		var user = userRepository.findUserById(userDto.getId()).orElseThrow();
 		assertTrue(user.isActive());
@@ -210,7 +227,7 @@ class UserFlowTests {
 		ResponseEntity<Void> response = restTemplate.exchange(
 				"/api/v1/users/" + userDto.getId(),
 				HttpMethod.DELETE,
-				null,
+                testJwtTokenGenerator.generateHttpEntityWithJwtRoleAdmin(),
 				Void.class
 		);
 
