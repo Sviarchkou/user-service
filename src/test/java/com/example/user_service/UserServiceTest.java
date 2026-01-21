@@ -5,6 +5,7 @@ import com.example.user_service.entity.User;
 import com.example.user_service.filter.SpecializationFilter;
 import com.example.user_service.mapper.UserMapper;
 import com.example.user_service.repository.UserRepository;
+import com.example.user_service.request.UserIdListRequest;
 import com.example.user_service.service.UserService;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
@@ -206,6 +207,56 @@ public class UserServiceTest {
 
         assertEquals(expectedPage.getContent(), result.getContent());
 
+    }
+
+    @Test
+    void shouldReturnListOfUserDto(){
+        User dbUser1 = new User();
+        var user1Id = UUID.randomUUID();
+        dbUser1.setId(user1Id);
+        dbUser1.setName("Jack");
+
+        User dbUser2 = new User();
+        var user2Id = UUID.randomUUID();
+        dbUser2.setId(user2Id);
+        dbUser2.setName("Jordan");
+
+        User dbUser3 = new User();
+        var user3Id = UUID.randomUUID();
+        dbUser3.setId(user3Id);
+        dbUser3.setName("Rojo");
+
+        UserDto expectedDto1 = new UserDto();
+        expectedDto1.setId(user1Id);
+        expectedDto1.setName("Jack");
+
+        UserDto expectedDto2 = new UserDto();
+        expectedDto2.setId(user2Id);
+        expectedDto2.setName("Jordan");
+
+        UserDto expectedDto3 = new UserDto();
+        expectedDto3.setId(user3Id);
+        expectedDto3.setName("Rojo");
+
+        UserIdListRequest request = new UserIdListRequest(List.of(user1Id, user2Id, user3Id));
+        List<User> dbUsers = List.of(dbUser1, dbUser2, dbUser3);
+        List<UserDto> userDtos = List.of(expectedDto1, expectedDto2, expectedDto3);
+
+        when(userRepository.findAllByIdIn(request.userIdList())).thenReturn(dbUsers);
+        when(userMapper.toDto(dbUser1)).thenReturn(expectedDto1);
+        when(userMapper.toDto(dbUser2)).thenReturn(expectedDto2);
+        when(userMapper.toDto(dbUser3)).thenReturn(expectedDto3);
+
+        // Act
+        var result = userService.getAllByUserIdList(request);
+
+        // Assert
+        verify(userRepository).findAllByIdIn(request.userIdList());
+        verify(userMapper).toDto(dbUser1);
+        verify(userMapper).toDto(dbUser2);
+        verify(userMapper).toDto(dbUser3);
+
+        assertEquals(result, userDtos);
     }
 
     @Test

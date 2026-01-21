@@ -7,6 +7,7 @@ import com.example.user_service.exception.UserNotFoundException;
 import com.example.user_service.filter.SpecializationFilter;
 import com.example.user_service.mapper.UserMapper;
 import com.example.user_service.repository.UserRepository;
+import com.example.user_service.request.UserIdListRequest;
 import com.example.user_service.specification.UserSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -51,6 +53,11 @@ public class UserService {
     public Page<UserDto> getAll(Pageable pageable, SpecializationFilter specializationFilter){
         return userRepository.findAll(UserSpecification.userFilterSpecification(specializationFilter), pageable)
                 .map(userMapper::toDto);
+    }
+
+    public List<UserDto> getAllByUserIdList(UserIdListRequest request){
+        return userRepository.findAllByIdIn(request.userIdList()).stream()
+                .map(userMapper::toDto).toList();
     }
 
     @CachePut(value = "users", key = "#id")

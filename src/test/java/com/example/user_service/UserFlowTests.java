@@ -2,6 +2,7 @@ package com.example.user_service;
 
 import com.example.user_service.dto.UserDto;
 import com.example.user_service.repository.UserRepository;
+import com.example.user_service.request.UserIdListRequest;
 import com.example.user_service.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,6 +157,51 @@ class UserFlowTests {
 		assertEquals("email2@gmail.com", response.getBody().getContent().get(1).getEmail());
 		assertEquals("email5@gmail.com", response.getBody().getContent().get(2).getEmail());
 	}
+
+    @Test
+    void getAllUsersByUserIdList(){
+        UserDto userDto1 = new UserDto();
+        userDto1.setName("nameForIdTest1");
+        userDto1.setSurname("surnameForIdTest1");
+        userDto1.setEmail("emailTest1@gmail.com");
+
+        UserDto userDto2 = new UserDto();
+        userDto2.setName("nameForIdTest2");
+        userDto2.setSurname("surnameForIdTest2");
+        userDto2.setEmail("emailTest1@gmail.com");
+
+        UserDto userDto3 = new UserDto();
+        userDto3.setName("nameForIdTest3");
+        userDto3.setSurname("surnameForIdTest3");
+        userDto3.setEmail("emailTest1@gmail.com");
+
+        userDto1 = userService.create(userDto1);
+        userDto2 = userService.create(userDto2);
+        userDto3 = userService.create(userDto3);
+
+        UserIdListRequest userIdListRequest = new UserIdListRequest(List.of(
+                userDto1.getId(),
+                userDto2.getId(),
+                userDto3.getId()
+        ));
+
+        var token = testJwtTokenGenerator.generateAdminAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+        HttpEntity<UserIdListRequest> httpEntity = new HttpEntity<>(userIdListRequest, headers);
+
+        ResponseEntity<List<UserDto>> response = restTemplate.exchange(
+                "/api/v1/users/in",
+                HttpMethod.POST,
+                httpEntity,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(response.getBody(), List.of(userDto1,userDto2,userDto3));
+    }
 
 	@Test
 	void updateUserById(){
