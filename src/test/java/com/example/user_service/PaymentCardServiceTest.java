@@ -145,7 +145,7 @@ public class PaymentCardServiceTest {
     void shouldReturnPageOfPaymentCardDto() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 5, Sort.by("number"));
-        SpecializationFilter filter = new SpecializationFilter("ja", "s");
+        SpecializationFilter filter = new SpecializationFilter("ja", "s", true);
 
         User user1 = new User();
         var user1Id = UUID.randomUUID();

@@ -134,7 +134,7 @@ public class UserServiceTest {
     void shouldReturnPageOfUserDto() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 5, Sort.by("name"));
-        SpecializationFilter filter = new SpecializationFilter("ja", "s");
+        SpecializationFilter filter = new SpecializationFilter("ja", "s", true);
 
         User dbUser1 = new User();
         var user1Id = UUID.randomUUID();
