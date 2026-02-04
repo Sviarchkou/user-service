@@ -39,6 +39,7 @@ public class PaymentCardService {
             throw new EmailAlreadyExistsException("Payment card with number: %s already exists".formatted(paymentCardDto.getNumber()));
         }
         PaymentCard paymentCard = paymentCardMapper.toEntity(paymentCardDto);
+        paymentCard.setActive(true);
         paymentCard = paymentCardRepository.save(paymentCard);
         return paymentCardMapper.toDto(paymentCard);
     }

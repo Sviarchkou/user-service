@@ -46,7 +46,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllByUserIdList(request));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or @userSecurity.hasPaymentCard(authentication, #id)")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
     @GetMapping("{id}/cards")
     public ResponseEntity<List<PaymentCardDto>> getUserPaymentCards(@PathVariable UUID id){
         return ResponseEntity.ok(paymentCardService.getAllByUserId(id));

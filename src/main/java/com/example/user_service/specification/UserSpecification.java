@@ -24,7 +24,18 @@ public class UserSpecification {
         };
     }
 
+    public static Specification<User> userActivinessSpecification(Boolean active){
+        return (root, query, cb) -> {
+            if (active == null)
+                return cb.conjunction();
+            else
+                return cb.equal(root.get("active"), active);
+        };
+    }
+
     public static Specification<User> userFilterSpecification(SpecializationFilter filter){
-        return userNameSpecification(filter.getName()).and(userSurnameSpecification(filter.getSurname()));
+        return userNameSpecification(filter.getName())
+                .and(userSurnameSpecification(filter.getSurname()))
+                .and(userActivinessSpecification(filter.getActive()));
     }
 }
