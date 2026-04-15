@@ -42,11 +42,11 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("in")
-    public ResponseEntity<List<UserDto>> getAllByUserIdList(@Valid UserIdListRequest request){
+    public ResponseEntity<List<UserDto>> getAllByUserIdList(@RequestBody @Valid UserIdListRequest request){
         return ResponseEntity.ok(userService.getAllByUserIdList(request));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or @userSecurity.hasPaymentCard(authentication, #id)")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or @userSecurity.hasUserId(authentication, #id)")
     @GetMapping("{id}/cards")
     public ResponseEntity<List<PaymentCardDto>> getUserPaymentCards(@PathVariable UUID id){
         return ResponseEntity.ok(paymentCardService.getAllByUserId(id));

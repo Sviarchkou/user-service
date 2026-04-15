@@ -65,7 +65,7 @@ public class UserService {
     public UserDto updateById(UUID id, UserDto userDto){
         User user = userRepository.findUserById(id).orElseThrow(
                 () -> new UserNotFoundException("User with id: %s is not found".formatted(id)));
-        if (userRepository.existsUserByEmail(userDto.getEmail())) {
+        if (!userDto.getEmail().equals(user.getEmail()) && userRepository.existsUserByEmail(userDto.getEmail())) {
             throw new EmailAlreadyExistsException("User with email: %s already exists".formatted(userDto.getEmail()));
         }
         user.setName(userDto.getName());

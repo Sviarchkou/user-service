@@ -35,7 +35,7 @@ public class UserDto implements Serializable {
 
     LocalDate birthDate;
 
-    @NotNull(message = "ID is required")
+    @NotBlank
     @Email(message = "String does not match the email format")
     String email;
 

@@ -11,6 +11,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class UserFlowTests {
@@ -168,12 +170,12 @@ class UserFlowTests {
         UserDto userDto2 = new UserDto();
         userDto2.setName("nameForIdTest2");
         userDto2.setSurname("surnameForIdTest2");
-        userDto2.setEmail("emailTest1@gmail.com");
+        userDto2.setEmail("emailTest2@gmail.com");
 
         UserDto userDto3 = new UserDto();
         userDto3.setName("nameForIdTest3");
         userDto3.setSurname("surnameForIdTest3");
-        userDto3.setEmail("emailTest1@gmail.com");
+        userDto3.setEmail("emailTest3@gmail.com");
 
         userDto1 = userService.create(userDto1);
         userDto2 = userService.create(userDto2);
@@ -200,7 +202,10 @@ class UserFlowTests {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(response.getBody(), List.of(userDto1,userDto2,userDto3));
+        assertEquals(3, response.getBody().size());
+        assertTrue(isEquals(response.getBody().get(0), userDto1));
+        assertTrue(isEquals(response.getBody().get(1), userDto2));
+        assertTrue(isEquals(response.getBody().get(2), userDto3));
     }
 
 	@Test
@@ -280,6 +285,14 @@ class UserFlowTests {
 		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 		assertTrue(userRepository.findUserById(userDto.getId()).isEmpty());
 	}
+
+    private boolean isEquals(UserDto d1, UserDto d2){
+        return d1.getId().equals(d2.getId()) &&
+                d1.getName().equals(d2.getName()) &&
+                d1.getSurname().equals(d2.getSurname()) &&
+                d1.getEmail().equals(d2.getEmail()) &&
+                d1.isActive() == d2.isActive();
+    }
 
 	private static class PageResponse<T> {
 		private List<T> content;

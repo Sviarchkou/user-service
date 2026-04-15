@@ -31,7 +31,18 @@ public class PaymentCardSpecification {
         };
     }
 
+    public static Specification<PaymentCard> cardActivinessSpecification(Boolean active){
+        return (root, query, cb) -> {
+            if (active == null)
+                return cb.conjunction();
+            else
+                return cb.equal(root.get("active"), active);
+        };
+    }
+
     public static Specification<PaymentCard> cardUserFilterSpecification(SpecializationFilter filter){
-            return cardUserNameSpecification(filter.getName()).and(cardUserSurnameSpecification(filter.getSurname()));
+            return cardUserNameSpecification(filter.getName())
+                    .and(cardUserSurnameSpecification(filter.getSurname()))
+                    .and(cardActivinessSpecification(filter.getActive()));
     }
 }

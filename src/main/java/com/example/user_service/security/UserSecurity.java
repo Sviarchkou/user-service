@@ -14,6 +14,8 @@ public class UserSecurity {
     private final PaymentCardService paymentCardService;
 
     public boolean hasUserId(Authentication authentication, UUID id) {
+        if (authentication.getPrincipal() == null)
+            return false;
         UUID userId = (UUID) authentication.getPrincipal();
         return userId.equals(id);
     }

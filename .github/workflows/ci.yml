@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - dev
   push:
     branches:
       - main
@@ -37,6 +38,9 @@ jobs:
 
       - name: Build and Run tests
         run: ./gradlew build --no-daemon --stacktrace
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
